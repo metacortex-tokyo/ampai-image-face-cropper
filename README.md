@@ -29,16 +29,7 @@ pyenv install 3.12.3
 pyenv local 3.12.3
 ```
 
-### 2. 仮想環境を作成
-
-```bash
-python -m venv venv
-source venv/bin/activate  # macOS/Linux
-# または
-venv\Scripts\activate     # Windows
-```
-
-### 3. 依存関係をインストール
+### 2. 依存関係をインストール
 
 ```bash
 pip install -r requirements.txt
