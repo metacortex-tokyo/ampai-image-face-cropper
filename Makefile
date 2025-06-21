@@ -70,7 +70,7 @@ status:
 	@echo "📊 開発環境の状態:"
 	@echo "Python version: $(shell python --version)"
 	@echo "Pip version: $(shell pip --version)"
-	@echo "Virtual env: $(VIRTUAL_ENV)"
+	@echo "Pyenv version: $(shell pyenv version)"
 	@echo "Requirements satisfied: $(shell pip check > /dev/null 2>&1 && echo "✅" || echo "❌")"
 
 # パッケージのビルド
