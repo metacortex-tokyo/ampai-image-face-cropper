@@ -35,6 +35,22 @@ pyenv local 3.12.3
 pip install -r requirements.txt
 ```
 
+## クイックスタート
+
+```bash
+# 1. プロジェクトセットアップ
+make setup
+
+# 2. 依存関係インストール
+make install
+
+# 3. 実行
+make run
+
+# ヘルプ表示
+make help
+```
+
 ## 使用方法
 
 ### 1. 画像の準備
