@@ -1,10 +1,10 @@
-# WRC Image Face Cropper - Makefile
+# Ampai Image Face Cropper - Makefile
 
 .PHONY: help install setup clean run test lint format
 
 # デフォルトターゲット
 help:
-	@echo "WRC Image Face Cropper - Available commands:"
+	@echo "Ampai Image Face Cropper - Available commands:"
 	@echo "  setup    - プロジェクトの初期セットアップ"
 	@echo "  install  - 依存関係をインストール"
 	@echo "  run      - 顔切り抜き処理を実行"

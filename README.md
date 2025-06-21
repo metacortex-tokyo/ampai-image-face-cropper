@@ -1,4 +1,4 @@
-# WRC Image Face Cropper
+# Ampai Image Face Cropper
 
 顔画像の自動切り抜きツールです。face-crop-plusライブラリを使用して、画像から顔部分を検出・切り抜きを行います。
 

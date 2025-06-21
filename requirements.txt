@@ -1,4 +1,4 @@
-# WRC Image Face Cropper - 依存関係
+# Ampai Image Face Cropper - 依存関係
 
 # 顔検出・切り抜きライブラリ
 face-crop-plus>=1.1.0

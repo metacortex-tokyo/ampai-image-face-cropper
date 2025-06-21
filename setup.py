@@ -7,13 +7,13 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
     requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
 
 setup(
-    name="wrc-image-face-cropper",
+    name="ampai-image-face-cropper",
     version="1.0.0",
-    author="WRC",
+    author="Ampai",
     description="顔画像の自動切り抜きツール",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/your-username/wrc-image-face-cropper",
+    url="https://github.com/your-username/ampai-image-face-cropper",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -30,7 +30,7 @@ setup(
     install_requires=requirements,
     entry_points={
         "console_scripts": [
-            "wrc-face-crop=face_crop_with_background_fix:main",
+            "ampai-face-crop=face_crop_with_background_fix:main",
         ],
     },
     include_package_data=True,
