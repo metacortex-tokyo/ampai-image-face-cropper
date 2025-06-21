@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # カスタム設定（必要に応じて調整）
     custom_settings = {
         'allow_skew': False,        # 回転を無効化して縦横比を保持
-        'face_factor': 0.6,         # 顔領域を小さめに（より引きで写る）
+        'face_factor': 0.45,         # 顔領域を小さめに（より引きで写る）
         'output_size': 256,         # Noneにして元の縦横比を保持
         'padding': 'Replicate'
     }
