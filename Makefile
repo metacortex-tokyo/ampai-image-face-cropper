@@ -16,8 +16,8 @@ help:
 # プロジェクトの初期セットアップ
 setup:
 	@echo "🚀 プロジェクトをセットアップ中..."
-	pyenv install 3.10.0 --skip-existing
-	pyenv local 3.10.0
+	pyenv install 3.12.3 --skip-existing
+	pyenv local 3.12.3
 	python -m venv venv
 	@echo "✅ セットアップ完了！次に 'make install' を実行してください"
 

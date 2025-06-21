@@ -12,7 +12,7 @@
 
 ## 必要な環境
 
-- Python 3.10以上
+- Python 3.12.3以上
 - face-crop-plus
 - OpenCV
 - NumPy
@@ -22,11 +22,11 @@
 ### 1. pyenvでPythonバージョンを設定
 
 ```bash
-# Python 3.10をインストール（未インストールの場合）
-pyenv install 3.10.0
+# Python 3.12.3をインストール（未インストールの場合）
+pyenv install 3.12.3
 
 # プロジェクトディレクトリでPythonバージョンを設定
-pyenv local 3.10.0
+pyenv local 3.12.3
 ```
 
 ### 2. 仮想環境を作成
