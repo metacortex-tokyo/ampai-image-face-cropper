@@ -1,7 +1,36 @@
 import os
 import glob
+import shutil
+import tempfile
 from face_crop_plus import Cropper
 
+VALID_EXTENSIONS = {".jpg", ".jpeg", ".png"}
+SKIP_FILE_NAMES = {".gitkeep", ".ds_store"}
+
+
+def collect_valid_images(input_dir):
+    """処理対象の画像のみを収集（隠しファイルや管理ファイルは除外）"""
+    valid_images = []
+    skipped_files = []
+
+    for entry in sorted(os.listdir(input_dir)):
+        full_path = os.path.join(input_dir, entry)
+        if not os.path.isfile(full_path):
+            continue
+
+        lower_name = entry.lower()
+        extension = os.path.splitext(lower_name)[1]
+
+        if entry.startswith(".") or lower_name in SKIP_FILE_NAMES:
+            skipped_files.append(entry)
+            continue
+
+        if extension in VALID_EXTENSIONS:
+            valid_images.append(full_path)
+        else:
+            skipped_files.append(entry)
+
+    return valid_images, skipped_files
 
 
 def process_face_crop(input_dir, output_dir, cropper_settings=None):
@@ -19,23 +48,36 @@ def process_face_crop(input_dir, output_dir, cropper_settings=None):
     
     print("顔の切り抜きを実行...")
     
+    input_images, skipped_files = collect_valid_images(input_dir)
+    if not input_images:
+        print(f"処理対象画像が見つかりません: {input_dir}")
+        return False
+
+    if skipped_files:
+        print(f"読み込み対象外ファイルをスキップ: {', '.join(skipped_files)}")
+
     # 顔の切り抜き実行
-    try:
-        cropper = Cropper(**cropper_settings)
-        cropper.process_dir(input_dir, output_dir)
-        print(f"顔の切り抜き完了: {output_dir}")
-    except Exception as e:
-        print(f"顔の切り抜きエラー: {e}")
-        print(f"使用した設定: {cropper_settings}")
-        # デフォルト設定で試してみる
+    with tempfile.TemporaryDirectory() as temp_input_dir:
+        for image_path in input_images:
+            destination = os.path.join(temp_input_dir, os.path.basename(image_path))
+            shutil.copy2(image_path, destination)
+
         try:
-            print("デフォルト設定で再試行...")
-            cropper = Cropper()
-            cropper.process_dir(input_dir, output_dir)
-            print(f"デフォルト設定で顔の切り抜き完了: {output_dir}")
-        except Exception as e2:
-            print(f"デフォルト設定でもエラー: {e2}")
-            return False
+            cropper = Cropper(**cropper_settings)
+            cropper.process_dir(temp_input_dir, output_dir)
+            print(f"顔の切り抜き完了: {output_dir}")
+        except Exception as e:
+            print(f"顔の切り抜きエラー: {e}")
+            print(f"使用した設定: {cropper_settings}")
+            # デフォルト設定で試してみる
+            try:
+                print("デフォルト設定で再試行...")
+                cropper = Cropper()
+                cropper.process_dir(temp_input_dir, output_dir)
+                print(f"デフォルト設定で顔の切り抜き完了: {output_dir}")
+            except Exception as e2:
+                print(f"デフォルト設定でもエラー: {e2}")
+                return False
     
     # 処理された画像数を確認
     extensions = ['*.jpg', '*.jpeg', '*.png', '*.JPG', '*.JPEG', '*.PNG']
