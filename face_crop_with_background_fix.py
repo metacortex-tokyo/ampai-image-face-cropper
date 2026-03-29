@@ -2,10 +2,15 @@ import os
 import glob
 import shutil
 import tempfile
+from datetime import datetime
+import cv2
+import numpy as np
 from face_crop_plus import Cropper
 
 VALID_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 SKIP_FILE_NAMES = {".gitkeep", ".ds_store"}
+BACKGROUND_EXPANSION_RATIO = 0.25
+BACKGROUND_EXPANSION_METHOD = "inpaint"
 
 
 def collect_valid_images(input_dir):
@@ -31,6 +36,63 @@ def collect_valid_images(input_dir):
             skipped_files.append(entry)
 
     return valid_images, skipped_files
+
+
+def expand_background_with_reflect_padding(image, pad_x, pad_y):
+    """反射パディングで背景を拡張"""
+    return cv2.copyMakeBorder(
+        image,
+        pad_y,
+        pad_y,
+        pad_x,
+        pad_x,
+        cv2.BORDER_REFLECT_101,
+    )
+
+
+def expand_background_with_inpaint(image, pad_x, pad_y):
+    """
+    外側余白を inpaint で埋めて背景を生成する。
+    まず反射で初期化してから inpaint することで、不自然な線化を抑えやすくする。
+    """
+    height, width = image.shape[:2]
+    expanded = expand_background_with_reflect_padding(image, pad_x, pad_y)
+
+    mask = np.zeros((height + pad_y * 2, width + pad_x * 2), dtype=np.uint8)
+    # 追加された外周領域のみを inpaint 対象にする
+    mask[:pad_y, :] = 255
+    mask[-pad_y:, :] = 255
+    mask[:, :pad_x] = 255
+    mask[:, -pad_x:] = 255
+
+    return cv2.inpaint(expanded, mask, inpaintRadius=5, flags=cv2.INPAINT_TELEA)
+
+
+def expand_background_for_crop(
+    image_path,
+    output_path,
+    expansion_ratio=BACKGROUND_EXPANSION_RATIO,
+    method=BACKGROUND_EXPANSION_METHOD,
+):
+    """
+    画像の四辺を反射パディングで拡張して、切り抜き前に背景余白を作る。
+    端ピクセルの単純引き伸ばし(Replicate)より、線状アーティファクトを抑制しやすい。
+    """
+    image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    if image is None:
+        shutil.copy2(image_path, output_path)
+        return
+
+    height, width = image.shape[:2]
+    pad_y = max(1, int(height * expansion_ratio))
+    pad_x = max(1, int(width * expansion_ratio))
+
+    if method == "reflect":
+        expanded = expand_background_with_reflect_padding(image, pad_x, pad_y)
+    else:
+        expanded = expand_background_with_inpaint(image, pad_x, pad_y)
+
+    cv2.imwrite(output_path, expanded)
 
 
 def process_face_crop(input_dir, output_dir, cropper_settings=None):
@@ -60,7 +122,7 @@ def process_face_crop(input_dir, output_dir, cropper_settings=None):
     with tempfile.TemporaryDirectory() as temp_input_dir:
         for image_path in input_images:
             destination = os.path.join(temp_input_dir, os.path.basename(image_path))
-            shutil.copy2(image_path, destination)
+            expand_background_for_crop(image_path, destination)
 
         try:
             cropper = Cropper(**cropper_settings)
@@ -94,14 +156,15 @@ def process_face_crop(input_dir, output_dir, cropper_settings=None):
 if __name__ == "__main__":
     # 設定
     input_directory = './input_images'
-    output_directory = './output_faces'
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_directory = f'./output_faces/{timestamp}'
     
     # カスタム設定（必要に応じて調整）
     custom_settings = {
         'allow_skew': False,        # 回転を無効化して縦横比を保持
         'face_factor': 0.45,         # 顔領域を小さめに（より引きで写る）
         'output_size': 256,         # Noneにして元の縦横比を保持
-        'padding': 'Replicate'
+        'padding': 'Reflect'
     }
     
     print("=== 顔の切り抜き処理 ===")
