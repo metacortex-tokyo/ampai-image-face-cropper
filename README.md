@@ -8,6 +8,9 @@
 - 🔄 **回転補正無効化**: 元の画像の向きを保持
 - 📏 **縦横比保持**: 元画像の縦横比を維持
 - 🎨 **引きで撮影**: face_factorを調整して余白を確保
+- 🪶 **WebP軽量化**: 切り抜き後にWebP形式へ変換
+- 🖼️ **横幅指定**: 100px〜1000pxから出力横幅を選択
+- 📊 **進捗表示**: 背景拡張・WebP変換の進み具合をCLIに表示
 - ⚡ **バッチ処理**: 複数の画像を一括処理
 
 ## 必要な環境
@@ -70,35 +73,57 @@ input_images/
 python face_crop_with_background_fix.py
 ```
 
+実行すると最初に出力画像の横幅を聞かれます。矢印キーで選択し、Enterで決定します。デフォルトは400pxです。
+
+```bash
+出力画像の横幅を選択してください。
+矢印キーで選択、Enterで決定します。
+100px  200px  300px  [400px]  500px  600px  700px  800px  900px  1000px
+```
+
+処理中は、背景拡張やWebP変換の進捗がCLIに表示されます。
+
 ### 3. 結果の確認
 
-切り抜きされた顔画像が `output_faces/` ディレクトリに保存されます。
+切り抜きされた元画像が `output_faces/` ディレクトリに保存され、WebP画像はその中の `webp/` ディレクトリに保存されます。
 
 ```
 output_faces/
-├── image1.jpg
-├── image2.png
-└── image3.jpeg
+└── 20260425_194100/
+    ├── image1.jpg
+    ├── image2.png
+    ├── image3.jpeg
+    └── webp/
+        ├── image1.webp
+        ├── image2.webp
+        └── image3.webp
 ```
 
 ## 設定
 
-`face_crop_with_background_fix.py` 内の `custom_settings` で設定を変更できます：
+`face_crop_with_background_fix.py` 内の `custom_settings` と定数で設定を変更できます：
 
 ```python
+DEFAULT_OUTPUT_WIDTH = 400
+OUTPUT_WIDTH_OPTIONS = list(range(100, 1001, 100))
+WEBP_QUALITY = 85
+
 custom_settings = {
     'allow_skew': False,        # 回転を無効化
-    'face_factor': 0.6,         # 顔領域のサイズ（0.1-1.0）
-    'output_size': 256,         # 出力画像サイズ
-    'padding': 'Replicate'      # パディング方式
+    'face_factor': 0.45,        # 顔領域のサイズ（0.1-1.0）
+    'output_size': DEFAULT_OUTPUT_WIDTH,
+    'padding': 'Reflect'        # パディング方式
 }
 ```
 
 ### パラメータ説明
 
+- **DEFAULT_OUTPUT_WIDTH**: CLIでEnterを押した場合の出力横幅
+- **OUTPUT_WIDTH_OPTIONS**: CLIに表示する横幅の選択肢
+- **WEBP_QUALITY**: WebP変換時の品質（大きいほど高品質・大容量）
 - **allow_skew**: 画像の回転補正を行うか（False推奨）
 - **face_factor**: 顔領域の大きさ（小さいほど引きで撮影）
-- **output_size**: 出力画像のサイズ（Noneで元サイズ）
+- **output_size**: 切り抜き時の出力サイズ（実行時に選択した横幅へ自動更新）
 - **padding**: パディング方式
 
 ## トラブルシューティング
