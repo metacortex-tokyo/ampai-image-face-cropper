@@ -10,6 +10,7 @@
 - 🎨 **引きで撮影**: face_factorを調整して余白を確保
 - 🪶 **WebP軽量化**: 切り抜き後にWebP形式へ変換
 - 🖼️ **横幅指定**: 100px〜1000pxから出力横幅を選択
+- 🧠 **OpenAI生成拡張（任意）**: 頭部が大きく上端に近い画像だけOpenAI Image Edit APIで上方向に拡張
 - 📊 **進捗表示**: 背景拡張・WebP変換の進み具合をCLIに表示
 - ⚡ **バッチ処理**: 複数の画像を一括処理
 
@@ -19,6 +20,7 @@
 - face-crop-plus
 - OpenCV
 - NumPy
+- requests
 
 ## インストール
 
@@ -125,6 +127,46 @@ custom_settings = {
 - **face_factor**: 顔領域の大きさ（小さいほど引きで撮影）
 - **output_size**: 切り抜き時の出力サイズ（実行時に選択した横幅へ自動更新）
 - **padding**: パディング方式
+
+### OpenAI生成拡張
+
+OpenAI Image Edit APIは課金対象になり得るため、デフォルトでは無効です。利用する場合はOpenAI APIキーを用意し、`.env.example` をコピーして `.env` を作成してください。
+
+```bash
+cp .env.example .env
+```
+
+`.env` の内容を編集します。
+
+```env
+OPENAI_EXPAND_ENABLED=1
+OPENAI_API_KEY=your-openai-api-key
+```
+
+OpenAI生成拡張は、ローカル顔検出で以下のどちらかを満たした画像だけに適用されます。
+
+- 顔の高さが画像高さの `60%` 以上
+- 顔の上端が画像上端から `17%` 以内
+
+しきい値は環境変数で調整できます。
+
+```bash
+OPENAI_FACE_HEIGHT_RATIO_THRESHOLD=0.60
+OPENAI_TOP_MARGIN_RATIO_THRESHOLD=0.17
+OPENAI_TOP_EXPANSION_RATIO=0.35
+```
+
+モデルや品質も必要に応じて変更できます。
+
+```bash
+OPENAI_IMAGE_EDIT_MODEL=gpt-image-1.5
+OPENAI_IMAGE_EDIT_QUALITY=high
+OPENAI_MAX_INPUT_LONG_SIDE=1536
+```
+
+`OPENAI_MAX_INPUT_LONG_SIDE` はOpenAI APIへ送る画像の長辺上限です。API対象の画像だけ事前に縮小し、通常のローカル切り抜きには影響しません。`0` を指定すると縮小を無効化します。
+
+生成拡張が失敗した場合は、自動的に従来のローカル背景拡張へフォールバックします。OpenAIには、元画像を下寄せした透明キャンバスと、上部だけを編集対象にしたマスクを送ります。
 
 ## トラブルシューティング
 
